@@ -1,0 +1,12 @@
+[
+  "google_index",
+  "disc_page_rank",
+  "nb_www",
+  "disc_safe_anchor",
+  "phish_hints",
+  "disc_ratio_intHyperlinks",
+  "domain_in_title",
+  "disc_domain_age",
+  "disc_links_in_tags",
+  "disc_ratio_digits_url"
+]
