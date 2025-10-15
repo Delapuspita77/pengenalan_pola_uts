@@ -6,68 +6,73 @@ Deteksi phishing dengan **seleksi fitur Information Gain (Top-K)** dan **Random 
 
 ## Struktur Folder
 
+```
 model deteksi phising/
 ├─ requirements.txt
 ├─ train.py
 ├─ predict.py
 ├─ data/
-│ └─ dataset phising raw.csv
-└─ artifacts/ # dibuat otomatis setelah training
-├─ model.pkl
-├─ kbins.pkl # hanya jika mode=discretized
-├─ selected_features.json
-├─ feature_schema.json
-└─ config.json
+│  └─ dataset phising raw.csv
+└─ artifacts/                # dibuat otomatis setelah training
+   ├─ model.pkl
+   ├─ kbins.pkl              # hanya jika mode=discretized
+   ├─ selected_features.json
+   ├─ feature_schema.json
+   └─ config.json
+```
+
 ---
 
 ## Instalasi
 
 ```bash
 pip install -r requirements.txt
+```
 
-Disarankan Python 3.9+.
+> Disarankan Python 3.9+.
 
-Cara Pakai Cepat
-1) Training (membangun model)
+---
+
+## Cara Pakai Cepat
+
+### 1) Training (membangun model)
+```bash
 python train.py --data "data/dataset phising raw.csv" --mode discretized --top_k 10
+```
+- `--mode`: `discretized` (default) atau `raw`
+- Output: metrik **holdout** di terminal, artefak tersimpan di `artifacts/`
 
-
---mode: discretized (default) atau raw
-
-Output: metrik holdout di terminal, artefak tersimpan di artifacts/
-
-2) Prediksi (memakai model)
+### 2) Prediksi (memakai model)
+```bash
 python predict.py --input "data/dataset phising raw.csv" --output "predictions.csv"
+```
+- Output: `predictions.csv` berisi kolom `proba_phishing` (0..1) dan `prediction` (0/1)
+- Jika input punya kolom `status`, metrik evaluasi otomatis dicetak
 
+---
 
-Output: predictions.csv berisi kolom proba_phishing (0..1) dan prediction (0/1)
+## Format Input
 
-Jika input punya kolom status, metrik evaluasi otomatis dicetak
+- CSV berisi **fitur numerik** (int/float)
+- Label opsional: kolom `status` ∈ {`legitimate`, `phishing`}
+- Bila model dilatih dengan `--mode discretized`, beberapa fitur model berupa `disc_*`.
+  - Script **membangun `disc_*` otomatis** dari **kolom mentah** (contoh umum):  
+    `page_rank`, `domain_age`, `ratio_intHyperlinks`, `links_in_tags`, `ratio_digits_url`
+- Daftar fitur final yang dipakai model ada di `artifacts/selected_features.json`
 
-Format Input
+---
 
-CSV berisi fitur numerik (int/float)
+## Troubleshooting
 
-Label opsional: kolom status ∈ {legitimate, phishing}
+- **FileNotFoundError (input CSV)** → cek path. Uji cepat:
+  ```bash
+  python predict.py --input "data/dataset phising raw.csv" --output "predictions.csv"
+  ```
+- **Kolom tidak ditemukan (mode discretized)** → pastikan kolom mentah untuk membentuk `disc_*` tersedia
+- **Metrik prediksi > metrik holdout** → wajar bila memprediksi seluruh dataset (optimistis); patokan generalisasi = metrik **holdout** dari `train.py`
 
-Bila model dilatih dengan --mode discretized, beberapa fitur model berupa disc_*.
+---
 
-Script membangun disc_* otomatis dari kolom mentah (contoh umum):
-page_rank, domain_age, ratio_intHyperlinks, links_in_tags, ratio_digits_url
-
-Daftar fitur final yang dipakai model ada di artifacts/selected_features.json
-
-Troubleshooting
-
-FileNotFoundError (input CSV) → cek path. Uji cepat:
-
-python predict.py --input "data/dataset phising raw.csv" --output "predictions.csv"
-
-
-Kolom tidak ditemukan (mode discretized) → pastikan kolom mentah untuk membentuk disc_* tersedia
-
-Metrik prediksi > metrik holdout → wajar bila memprediksi seluruh dataset (optimistis); patokan generalisasi = metrik holdout dari train.py
-
-Lisensi
+## Lisensi
 
 Untuk penggunaan akademik/riset. Mohon atribusi ke pemilik dataset asli.
