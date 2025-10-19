@@ -62,17 +62,4 @@ python predict.py --input "data/dataset phising raw.csv" --output "predictions.c
 
 ---
 
-## Troubleshooting
 
-- **FileNotFoundError (input CSV)** → cek path. Uji cepat:
-  ```bash
-  python predict.py --input "data/dataset phising raw.csv" --output "predictions.csv"
-  ```
-- **Kolom tidak ditemukan (mode discretized)** → pastikan kolom mentah untuk membentuk `disc_*` tersedia
-- **Metrik prediksi > metrik holdout** → wajar bila memprediksi seluruh dataset (optimistis); patokan generalisasi = metrik **holdout** dari `train.py`
-
----
-
-## Lisensi
-
-Untuk penggunaan akademik/riset. Mohon atribusi ke pemilik dataset asli.
