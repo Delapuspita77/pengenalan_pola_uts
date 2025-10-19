@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 ---
 
-## Cara Pakai Cepat
+## Cara Pakai 
 
 ### 1) Training (membangun model)
 ```bash
