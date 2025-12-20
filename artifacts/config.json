@@ -1,6 +1,3 @@
 {
-  "mode": "discretized",
-  "top_k": 10,
-  "threshold": 0.49999999999999994,
-  "seed": 42
+  "threshold": 0.5
 }

@@ -1,12 +1,12 @@
 [
   "google_index",
-  "disc_page_rank",
-  "nb_www",
-  "disc_safe_anchor",
-  "phish_hints",
-  "disc_ratio_intHyperlinks",
-  "domain_in_title",
-  "disc_domain_age",
-  "disc_links_in_tags",
-  "disc_ratio_digits_url"
+  "web_traffic",
+  "domain_age",
+  "ratio_extHyperlinks",
+  "ratio_intHyperlinks",
+  "nb_hyperlinks",
+  "page_rank",
+  "safe_anchor",
+  "domain_registration_length",
+  "links_in_tags"
 ]

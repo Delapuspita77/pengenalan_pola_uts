@@ -1,102 +1,151 @@
+
 import streamlit as st
 import pandas as pd
 import joblib
 import numpy as np
-import os  # <--- Tambahan 1: Untuk mengatur alamat file
+import os
 
-# --- KONFIGURASI ---
-st.set_page_config(page_title="Phishing Detector EAS", layout="wide")
+# ==============================
+# KONFIGURASI HALAMAN
+# ==============================
+st.set_page_config(
+    page_title="Phishing Detector EAS",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- Tambahan 2: Kode Ajaib Alamat Otomatis ---
-# Perintah ini mencari folder tempat file app.py ini berada
+# ==============================
+# LOAD MODEL
+# ==============================
 base_path = os.path.dirname(__file__)
-# Perintah ini menggabungkan folder tersebut dengan nama file modelnya
-model_path = os.path.join(base_path, 'model.pkl')
+model_path = os.path.join(base_path, "model.pkl")
 
-# Fungsi untuk memuat model
 @st.cache_resource
 def load_model():
-    # Tambahan 3: Menggunakan model_path agar tidak FileNotFound lagi
     return joblib.load(model_path)
 
 model = load_model()
 
-# Daftar 10 fitur terbaik dari Eksperimen A
+# ==============================
+# FITUR (HARUS SAMA DENGAN TRAIN)
+# ==============================
 features = [
-    'google_index', 'web_traffic', 'domain_age', 'ratio_extHyperlinks', 
-    'ratio_intHyperlinks', 'nb_hyperlinks', 'page_rank', 'safe_anchor', 
-    'domain_registration_length', 'links_in_tags'
+    'google_index',
+    'web_traffic',
+    'domain_age',
+    'ratio_extHyperlinks',
+    'ratio_intHyperlinks',
+    'nb_hyperlinks',
+    'page_rank',
+    'safe_anchor',
+    'domain_registration_length',
+    'links_in_tags'
 ]
 
-# --- TAMPILAN ---
-st.title("🛡️ Phishing Detection")
-st.write(f"Menggunakan 10 Fitur Terbaik (InfoGain RAW) - Akurasi: 94.4%")
+# ==============================
+# HEADER
+# ==============================
+st.title("🛡️ Phishing Detection System")
+st.caption("Model: Random Forest + InfoGain (RAW Features)")
+st.markdown("---")
 
-tab1, tab2 = st.tabs(["Input Manual", "Upload CSV"])
+tab1, tab2 = st.tabs(["🧮 Input Manual", "📂 Upload CSV"])
 
+# =====================================================
+# TAB 1 — INPUT MANUAL (REALTIME)
+# =====================================================
 with tab1:
-    st.subheader("Masukkan Nilai Fitur")
-    
-    # Membuat 2 kolom agar tampilan input rapi
+    st.subheader("🔢 Masukkan Nilai Fitur")
+
     col1, col2 = st.columns(2)
-    
-    inputs = []
+    values = {}
+
     for i, feat in enumerate(features):
         with col1 if i < 5 else col2:
-            val = st.number_input(f"{feat}", value=0.0, step=0.1)
-            inputs.append(val)
-    
-    if st.button("Prediksi Satuan"):
-        # Proses Prediksi
-        input_array = np.array([inputs])
-        prediction = model.predict(input_array)
-        probability = model.predict_proba(input_array)
-        
-        st.divider()
-        if prediction[0] == 1:
-            st.error(f"HASIL: **PHISHING** 🚩")
-        else:
-            st.success(f"HASIL: **LEGIT (AMAN)** ✅")
-        st.write(f"Tingkat Keyakinan: {np.max(probability)*100:.2f}%")
+            values[feat] = st.number_input(
+                label=feat,
+                value=0.0,
+                step=0.1
+            )
 
+    input_df = pd.DataFrame([values])
+
+    if st.button("🔍 Prediksi"):
+        proba = model.predict_proba(input_df)[0, 1]
+        pred = int(proba >= 0.5)
+
+        st.markdown("---")
+        if pred == 1:
+            st.error("🚨 **HASIL: PHISHING**")
+        else:
+            st.success("✅ **HASIL: LEGIT (AMAN)**")
+
+        st.metric(
+            label="Confidence (Phishing)",
+            value=f"{proba * 100:.2f}%"
+        )
+
+# =====================================================
+# TAB 2 — CSV (REALTIME PREDICTION)
+# =====================================================
 with tab2:
-    st.subheader("Prediksi Massal via CSV")
-    uploaded_file = st.file_uploader("Upload CSV (Pastikan ada 10 kolom fitur)", type="csv")
-    
+    st.subheader("📊 Prediksi Massal dari CSV")
+
+    uploaded_file = st.file_uploader(
+        "Upload file CSV (harus mengandung 10 fitur)",
+        type=["csv"]
+    )
+
     if uploaded_file:
-        df_test = pd.read_csv(uploaded_file)
-        
-        # Cek apakah 10 kolom ada di CSV
-        if all(col in df_test.columns for col in features):
-            st.write("Data Berhasil Dimuat:")
-            st.dataframe(df_test[features].head())
-            
-            if st.button("Proses Seluruh Data"):
-                preds = model.predict(df_test[features])
-                probs = model.predict_proba(df_test[features]).max(axis=1)
-                
-                df_test['Status'] = ["Phishing" if p == 1 else "Legit" for p in preds]
-                df_test['Confidence'] = probs
-                
-                st.success("Selesai!")
-                st.dataframe(df_test)
-                
-                # Fitur Download Hasil
-                csv = df_test.to_csv(index=False).encode('utf-8')
-                st.download_button("Download Hasil (.csv)", data=csv, file_name="hasil_prediksi_phishing.csv")
+        df = pd.read_csv(uploaded_file)
+
+        if not all(f in df.columns for f in features):
+            st.error("❌ Kolom CSV tidak sesuai.")
+            st.write("Kolom yang dibutuhkan:", features)
         else:
-            st.error(f"CSV harus memiliki kolom: {', '.join(features)}")
+            st.success("✅ File valid. Prediksi diproses secara realtime.")
 
-st.divider()
+            X = df[features].copy()
+
+            # === PREDIKSI LANGSUNG (REALTIME) ===
+            proba = model.predict_proba(X)[:, 1]
+            pred = (proba >= 0.5).astype(int)
+
+            df_result = df.copy()
+            df_result["Prediction"] = np.where(pred == 1, "Phishing", "Legit")
+            df_result["Confidence (%)"] = (proba * 100).round(2)
+
+            # === RINGKASAN ===
+            colA, colB, colC = st.columns(3)
+            colA.metric("Total Data", len(df_result))
+            colB.metric("Phishing", int((pred == 1).sum()))
+            colC.metric("Legit", int((pred == 0).sum()))
+
+            st.markdown("### 🔍 Preview Hasil")
+            st.dataframe(df_result.head(20), use_container_width=True)
+
+            # === DOWNLOAD ===
+            csv = df_result.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                "⬇️ Download Hasil Prediksi",
+                csv,
+                file_name="hasil_prediksi_phishing.csv",
+                mime="text/csv"
+            )
+
+# ==============================
+# FOOTER
+# ==============================
+st.markdown("---")
 st.info("""
-**Pengenalan Pola (C-081)**
-        
-**Dosen Pengampu:**
-1. Fetty Tri Anggraeny, S.Kom., M.Kom.
-2. Dina Zatusiva Haq
+**Pengenalan Pola (C-081)**  
 
-**Anggota Kelompok:**
-1. Indah Ayu Putri Mashita Cahyani (22081010048)
-2. Dela Puspita Lasminingrum (22081010209)
-3. Angie Nurshabrina Putri (22081010254)
+**Dosen Pengampu:**  
+1. Fetty Tri Anggraeny, S.Kom., M.Kom.  
+2. Dina Zatusiva Haq  
+
+**Anggota Kelompok:**  
+1. Indah Ayu Putri Mashita Cahyani (22081010048)  
+2. Dela Puspita Lasminingrum (22081010209)  
+3. Angie Nurshabrina Putri (22081010254)  
 """)
