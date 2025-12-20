@@ -124,6 +124,8 @@ Aplikasi ini dilengkapi dengan dashboard **Streamlit** untuk pengalaman yang leb
 python -m streamlit run artifacts/app.py
 
 ```
+<img width="1829" height="865" alt="image" src="https://github.com/user-attachments/assets/6a885bae-bc89-48f8-9d26-aae25a682a96" />
+
 
 
 
