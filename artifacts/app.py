@@ -2,14 +2,23 @@ import streamlit as st
 import pandas as pd
 import joblib
 import numpy as np
+import os  # <--- Tambahan 1: Untuk mengatur alamat file
 
 # --- KONFIGURASI ---
-st.set_page_config(page_title="Phishing Detector UTS", layout="wide")
+st.set_page_config(page_title="Phishing Detector EAS", layout="wide")
+
+# --- Tambahan 2: Kode Ajaib Alamat Otomatis ---
+# Perintah ini mencari folder tempat file app.py ini berada
+base_path = os.path.dirname(__file__)
+# Perintah ini menggabungkan folder tersebut dengan nama file modelnya
+model_path = os.path.join(base_path, 'model.pkl')
 
 # Fungsi untuk memuat model
 @st.cache_resource
 def load_model():
-    return joblib.load('artifacts/model.pkl')
+    # Tambahan 3: Menggunakan model_path agar tidak FileNotFound lagi
+    return joblib.load(model_path)
+
 model = load_model()
 
 # Daftar 10 fitur terbaik dari Eksperimen A
@@ -20,7 +29,7 @@ features = [
 ]
 
 # --- TAMPILAN ---
-st.title("🛡️ Phishing Detection ")
+st.title("🛡️ Phishing Detection")
 st.write(f"Menggunakan 10 Fitur Terbaik (InfoGain RAW) - Akurasi: 94.4%")
 
 tab1, tab2 = st.tabs(["Input Manual", "Upload CSV"])
@@ -78,11 +87,8 @@ with tab2:
         else:
             st.error(f"CSV harus memiliki kolom: {', '.join(features)}")
 
-
-            
 st.divider()
 st.info("""
-
 **Pengenalan Pola (C-081)**
         
 **Dosen Pengampu:**
@@ -93,7 +99,4 @@ st.info("""
 1. Indah Ayu Putri Mashita Cahyani (22081010048)
 2. Dela Puspita Lasminingrum (22081010209)
 3. Angie Nurshabrina Putri (22081010254)
-
-
-
 """)
