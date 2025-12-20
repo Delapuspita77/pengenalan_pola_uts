@@ -114,6 +114,24 @@ with tab2:
             df_result = df.copy()
             df_result["Prediction"] = np.where(pred == 1, "Phishing", "Legit")
             df_result["Confidence (%)"] = (proba * 100).round(2)
+            
+            # =========================
+            # EVALUASI JIKA ADA LABEL
+            # =========================
+            if "status" in df.columns:
+                y_true = (df["status"] == "phishing").astype(int).values
+
+                accuracy = (y_true == pred).mean()
+                phishing_acc = ((pred[y_true == 1] == 1).mean() * 100) if (y_true == 1).any() else 0
+                legit_acc = ((pred[y_true == 0] == 0).mean() * 100) if (y_true == 0).any() else 0
+
+                st.markdown("### 📈 Evaluasi Model (CSV Berlabel)")
+
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Accuracy", f"{accuracy*100:.2f}%")
+                c2.metric("Recall Phishing", f"{phishing_acc:.2f}%")
+                c3.metric("Recall Legit", f"{legit_acc:.2f}%")
+
 
             # === RINGKASAN ===
             colA, colB, colC = st.columns(3)
