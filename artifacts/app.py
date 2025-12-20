@@ -9,9 +9,7 @@ st.set_page_config(page_title="Phishing Detector UTS", layout="wide")
 # Fungsi untuk memuat model
 @st.cache_resource
 def load_model():
-    # Pastikan file ini namanya 'model.pkl' di folder kamu
-    return joblib.load('model.pkl')
-
+    return joblib.load('artifacts/model.pkl')
 model = load_model()
 
 # Daftar 10 fitur terbaik dari Eksperimen A
