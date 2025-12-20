@@ -129,10 +129,4 @@ python -m streamlit run artifacts/app.py
 
 ```
 
-### Saran Tambahan untuk GitHub:
-1. **License:** Jika Anda ingin orang lain bisa menggunakan kodenya, pertimbangkan untuk menambahkan file `LICENSE` (seperti MIT License).
-2. **Requirements:** Pastikan file `requirements.txt` Anda sudah mencakup library utama seperti `pandas`, `scikit-learn`, dan `streamlit`.
 
-Apakah Anda ingin saya membantu membuatkan draf isi file `requirements.txt` atau bagian `LICENSE` sekalian?
-
-```
